@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PRAMUD — Bus & Train Booking</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f5f7fb;font-family:Arial,sans-serif;color:#172033}
+.app{max-width:480px;margin:auto;min-height:100vh;background:#fff;padding-bottom:82px}
+header{padding:24px 22px 12px}
+.logo{font-size:28px;font-weight:800;letter-spacing:1px}
+.tag{font-size:12px;color:#6d7483;margin-top:4px}
+.hero{padding:18px 22px 10px}
+.hero h1{font-size:25px;line-height:1.15;margin:0 0 8px}
+.hero p{margin:0;color:#6d7483;font-size:15px}
+.tabs{display:flex;gap:10px;padding:18px 22px 8px}
+.tab{flex:1;padding:13px;border:1px solid #e1e5ec;border-radius:13px;background:#fff;font-size:15px;font-weight:700}
+.tab.active{background:#172033;color:white;border-color:#172033}
+.card{margin:12px 22px;padding:18px;border:1px solid #e5e8ef;border-radius:18px;box-shadow:0 7px 25px rgba(23,32,51,.08)}
+.field{margin-bottom:12px}
+label{display:block;font-size:12px;color:#737b89;margin:0 0 6px}
+input{width:100%;padding:13px;border:1px solid #dce1e9;border-radius:11px;font-size:15px;background:white}
+.primary{width:100%;padding:14px;border:0;border-radius:12px;background:#172033;color:#fff;font-size:16px;font-weight:700;margin-top:4px}
+.results{padding:10px 22px}
+.results h2{font-size:18px;margin-bottom:5px}
+.results>p{color:#6d7483;font-size:13px}
+.result{border:1px solid #e3e6ed;border-radius:15px;padding:15px;margin:10px 0}
+.result b{font-size:16px}
+.result p{color:#6d7483;margin:7px 0 12px;font-size:13px}
+.book{padding:9px 14px;border:0;border-radius:9px;background:#172033;color:#fff}
+.hidden{display:none}
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(480px,100%);background:white;border-top:1px solid #e7e9ee;display:flex;justify-content:space-around;padding:10px 0}
+nav button{border:0;background:none;font-size:21px;color:#727987}
+nav small{display:block;font-size:11px;margin-top:3px}
+nav .active{color:#172033;font-weight:700}
+
+#home:target + .auth{display:none}.auth{position:fixed;inset:0;background:#f5f7fb;z-index:20;display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-box{width:min(430px,100%);background:#fff;border:1px solid #e5e8ef;border-radius:24px;padding:28px 22px;box-shadow:0 15px 45px rgba(23,32,51,.12)}
+.auth-logo{text-align:center;font-size:30px;font-weight:800;letter-spacing:1px;color:#172033}
+.auth-sub{text-align:center;color:#737b89;font-size:14px;margin:7px 0 25px}
+.auth h2{font-size:22px;margin:0 0 18px}
+.auth label{display:block;font-size:12px;color:#737b89;margin:0 0 6px}
+.auth input{width:100%;padding:14px;border:1px solid #dce1e9;border-radius:12px;font-size:15px;margin-bottom:13px}
+.auth .primary{margin-top:3px}
+.auth-switch{text-align:center;color:#737b89;font-size:13px;margin-top:18px}
+.auth-switch button{border:0;background:none;color:#172033;font-weight:700;font-size:13px}
+.auth-note{font-size:11px;color:#8a909c;text-align:center;margin-top:12px;line-height:1.4}
+
+.screen{display:none}
+.screen.active{display:block}
+.topbar{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid #e7e9ee}
+.back{border:0;background:none;font-size:25px}
+.topbar h2{margin:0;font-size:18px}
+.route-summary{padding:18px 22px;background:#f5f7fb}
+.route-summary b{font-size:18px}.route-summary span{color:#737b89;font-size:13px}
+.bus-card{margin:12px 22px;padding:16px;border:1px solid #e3e6ed;border-radius:16px}
+.bus-head{display:flex;justify-content:space-between;gap:10px}.bus-name{font-weight:700}.price{font-weight:800}
+.bus-meta{color:#737b89;font-size:13px;margin:8px 0 13px}
+.bus-card button,.continue{border:0;border-radius:10px;background:#172033;color:white;padding:11px 15px;font-weight:700}
+.seat-info{padding:16px 22px;color:#737b89;font-size:13px}
+.bus-layout{margin:0 22px;padding:20px;border:1px solid #e3e6ed;border-radius:18px;background:#fafbfc}
+.driver{font-size:12px;text-align:right;color:#737b89;margin-bottom:16px}
+.seats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:260px;margin:auto}
+.seat{height:42px;border:1px solid #cfd5df;border-radius:9px;background:white;font-size:12px}
+.seat.selected{background:#172033;color:white;border-color:#172033}
+.seat.booked{background:#e6e8ed;color:#999;border-color:#e6e8ed}
+.legend{display:flex;justify-content:center;gap:18px;margin:18px 0;font-size:11px;color:#737b89}
+.dot{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid #cfd5df;vertical-align:-2px;margin-right:4px}
+.dot.sel{background:#172033}.dot.bk{background:#e6e8ed;border:0}
+.seat-footer{padding:15px 22px;display:flex;justify-content:space-between;align-items:center;position:sticky;bottom:0;background:white;border-top:1px solid #e7e9ee}
+.seat-footer b{font-size:16px}
+
+.form-screen{padding-bottom:30px}
+.form-pad{padding:18px 22px}
+.form-title{font-size:22px;margin:4px 0 7px}
+.form-sub{color:#737b89;font-size:13px;margin:0 0 18px}
+.passenger-card,.summary-card{border:1px solid #e3e6ed;border-radius:16px;padding:16px;margin-bottom:12px}
+.passenger-card h3,.summary-card h3{font-size:16px;margin:0 0 14px}
+.form-field{margin-bottom:12px}.form-field label{display:block;font-size:12px;color:#737b89;margin-bottom:6px}
+.form-field input,.form-field select{width:100%;padding:13px;border:1px solid #dce1e9;border-radius:11px;font-size:15px;background:white}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.full-btn{width:100%;padding:14px;border:0;border-radius:12px;background:#172033;color:white;font-size:16px;font-weight:700;margin-top:4px}
+.summary-row{display:flex;justify-content:space-between;gap:15px;padding:9px 0;border-bottom:1px solid #eef0f4;font-size:14px}
+.summary-row:last-child{border-bottom:0}.muted{color:#737b89}.total{font-size:18px;font-weight:800;padding-top:14px}
+.ticket{margin:18px 22px;border:1px solid #dfe4ec;border-radius:20px;overflow:hidden;background:#fff}
+.ticket-head{padding:20px;background:#172033;color:white}.ticket-head b{font-size:21px}.ticket-head span{display:block;font-size:12px;opacity:.75;margin-top:4px}
+.ticket-body{padding:18px}.ticket-route{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:18px;margin-bottom:15px}
+.pill{display:inline-block;padding:6px 9px;border-radius:8px;background:#eef1f6;font-size:11px;color:#596170}
+.success{text-align:center;padding:18px 22px 5px}.success-icon{font-size:44px}.success h2{margin:6px 0}.success p{color:#737b89;font-size:13px}
+
+.train-class{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.class-btn{padding:12px;border:1px solid #dce1e9;border-radius:11px;background:white;text-align:left}
+.class-btn.active{border-color:#172033;background:#f0f2f6}
+.class-btn b{display:block}.class-btn small{color:#737b89}
+
+.page-screen{display:none;min-height:calc(100vh - 82px);padding-bottom:25px}
+.page-screen.active{display:block}
+.ticket-mini{margin:12px 22px;padding:16px;border:1px solid #e3e6ed;border-radius:16px;background:white}
+.ticket-mini .route{font-size:18px;font-weight:800;margin-bottom:8px}
+.ticket-mini .meta{font-size:13px;color:#737b89;line-height:1.7}
+.status{display:inline-block;padding:5px 9px;border-radius:8px;background:#eaf5ed;color:#2f6f45;font-size:11px;font-weight:700}
+.empty{text-align:center;padding:80px 30px;color:#737b89}
+.profile-head{text-align:center;padding:35px 22px 20px}
+.avatar{width:76px;height:76px;border-radius:50%;margin:auto;background:#172033;color:white;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800}
+.profile-head h2{margin:12px 0 5px}.profile-head p{margin:0;color:#737b89}
+.profile-menu{margin:0 22px;border:1px solid #e3e6ed;border-radius:16px;overflow:hidden}
+.profile-menu button{width:100%;padding:16px;border:0;border-bottom:1px solid #eef0f4;background:white;text-align:left;font-size:14px}
+.profile-menu button:last-child{border-bottom:0;color:#c0392b}
+.profile-menu span{float:right;color:#9aa0ab}
+
+.payment-box{margin:18px 22px;border:1px solid #e3e6ed;border-radius:18px;padding:18px;text-align:center}
+.qr-wrap{display:inline-block;padding:12px;background:white;border:1px solid #e2e5eb;border-radius:12px;margin:10px 0}
+.qr-demo{width:190px;height:190px;display:block}
+.payment-methods{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.pay-method{padding:12px;border:1px solid #dce1e9;border-radius:11px;background:white;font-weight:700}
+.pay-method.active{background:#172033;color:white;border-color:#172033}
+.demo-warning{font-size:11px;color:#737b89;line-height:1.4;margin:10px 0 0}
+</style>
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#111827">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+</head>
+<body>
+
+<div id="home"></div>
+<div id="auth" class="auth">
+  <div class="auth-box">
+    <div class="auth-logo">PRAMUD</div>
+    <div class="auth-sub">Bus • Train • Travel</div>
+    <div id="loginForm">
+      <h2>Welcome back 👋</h2>
+      <label>Mobile number</label>
+      <input id="loginMobile" type="tel" inputmode="numeric" maxlength="10" placeholder="Enter 10-digit mobile number">
+      <label>Password</label>
+      <input id="loginPassword" type="password" placeholder="Enter password">
+      <a class="primary" href="#home" style="display:block;text-decoration:none;text-align:center">Login <span style="float:right">→</span></a>
+      <div class="auth-switch">New to PRAMUD? <button onclick="showSignup()">Create account</button></div>
+      <div class="auth-note">Prototype login only. No real OTP or payment is processed.</div>
+    </div>
+
+    <div id="signupForm" class="hidden">
+      <h2>Create your account</h2>
+      <label>Full name</label>
+      <input id="signupName" placeholder="Enter your name">
+      <label>Mobile number</label>
+      <input id="signupMobile" type="tel" inputmode="numeric" maxlength="10" placeholder="Enter 10-digit mobile number">
+      <label>Password</label>
+      <input id="signupPassword" type="password" placeholder="Create a password">
+      <button class="primary" onclick="signup()">Sign Up <span style="float:right">→</span></button>
+      <div class="auth-switch">Already have an account? <button onclick="showLogin()">Login</button></div>
+      <div class="auth-note">Prototype signup only. Your details are not sent to a server.</div>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+<header><div class="logo">PRAMUD</div><div class="tag">Bus • Train • Travel</div></header>
+<main>
+<section class="hero"><h1>Where do you want to go?</h1><p>Book your journey from one place.</p></section>
+<div class="tabs">
+<button class="tab active" data-mode="bus">🚌 Bus</button>
+<button class="tab" data-mode="train">🚆 Train</button>
+</div>
+<section class="card">
+<div class="field"><label>From</label><input id="from" placeholder="Hyderabad"></div>
+<div class="field"><label>To</label><input id="to" placeholder="Chennai"></div>
+<div class="field"><label>Travel date</label><input id="date" type="date"></div>
+<button id="search" class="primary">Search <span style="float:right">→</span></button>
+</section>
+<section id="results" class="results hidden"></section>
+
+<section id="busResults" class="screen">
+  <div class="topbar"><button class="back" onclick="showHome()">←</button><h2>Available buses</h2></div>
+  <div class="route-summary"><b id="busRoute">Hyderabad → Chennai</b><br><span id="busDate">Select date</span></div>
+  <div class="bus-card"><div class="bus-head"><div class="bus-name">Orange Travels</div><div class="price">₹899</div></div><div class="bus-meta">21:30 → 06:30 • AC Sleeper • ⭐ 4.4</div><button onclick="openSeats('Orange Travels','₹899')">Select seats</button></div>
+  <div class="bus-card"><div class="bus-head"><div class="bus-name">TSRTC Super Luxury</div><div class="price">₹720</div></div><div class="bus-meta">19:45 → 05:20 • Non-AC Seater • ⭐ 4.2</div><button onclick="openSeats('TSRTC Super Luxury','₹720')">Select seats</button></div>
+</section>
+
+<section id="seatScreen" class="screen">
+  <div class="topbar"><button class="back" onclick="showBusResults()">←</button><h2 id="seatBusName">Select seats</h2></div>
+  <div class="seat-info">Choose your seats. Grey seats are already booked.</div>
+  <div class="bus-layout">
+    <div class="driver">Driver 🚍</div>
+    <div class="seats" id="seatGrid"></div>
+    <div class="legend"><span><i class="dot"></i>Available</span><span><i class="dot sel"></i>Selected</span><span><i class="dot bk"></i>Booked</span></div>
+  </div>
+  <div class="seat-footer"><div><small>Selected</small><br><b id="selectedCount">0 seats</b></div><button class="continue" onclick="continueBooking()">Continue →</button></div>
+</section>
+
+<section id="passengerScreen" class="screen form-screen">
+  <div class="topbar"><button class="back" onclick="showSeatScreen()">←</button><h2>Passenger details</h2></div>
+  <div class="form-pad">
+    <h1 class="form-title">Who is travelling?</h1>
+    <p class="form-sub">Enter the details exactly as they should appear on the ticket.</p>
+    <div class="passenger-card">
+      <h3>Passenger 1</h3>
+      <div class="form-field"><label>Full name</label><input id="pName" placeholder="Enter full name"></div>
+      <div class="two">
+        <div class="form-field"><label>Age</label><input id="pAge" type="number" min="1" max="120" placeholder="Age"></div>
+        <div class="form-field"><label>Gender</label><select id="pGender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+      </div>
+    </div>
+    <div class="passenger-card">
+      <h3>Contact details</h3>
+      <div class="form-field"><label>Mobile number</label><input id="pMobile" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number"></div>
+      <div class="form-field"><label>Email (optional)</label><input id="pEmail" type="email" placeholder="you@example.com"></div>
+    </div>
+    <button class="full-btn" onclick="showSummary()">Review booking →</button>
+  </div>
+</section>
+
+<section id="summaryScreen" class="screen form-screen">
+  <div class="topbar"><button class="back" onclick="showPassenger()">←</button><h2>Review booking</h2></div>
+  <div class="form-pad">
+    <div class="summary-card">
+      <h3>Journey</h3>
+      <div class="summary-row"><span class="muted">Bus</span><b id="sumBus">Orange Travels</b></div>
+      <div class="summary-row"><span class="muted">Route</span><b id="sumRoute">Hyderabad → Chennai</b></div>
+      <div class="summary-row"><span class="muted">Date</span><b id="sumDate">Select date</b></div>
+      <div class="summary-row"><span class="muted">Seats</span><b id="sumSeats">1</b></div>
+    </div>
+    <div class="summary-card">
+      <h3>Passenger</h3>
+      <div class="summary-row"><span class="muted">Name</span><b id="sumName">—</b></div>
+      <div class="summary-row"><span class="muted">Age / Gender</span><b id="sumAgeGender">—</b></div>
+      <div class="summary-row"><span class="muted">Mobile</span><b id="sumMobile">—</b></div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-row"><span class="muted">Ticket fare</span><b id="sumFare">₹899</b></div>
+      <div class="summary-row total"><span>Total</span><b id="sumTotal">₹899</b></div>
+    </div>
+    <button class="full-btn" onclick="openPayment()">Continue to payment →</button>
+    <p class="form-sub" style="text-align:center;margin-top:12px">Prototype only — no payment is charged.</p>
+  </div>
+</section>
+
+
+<section id="paymentScreen" class="screen form-screen">
+  <div class="topbar"><button class="back" onclick="showSummary()">←</button><h2>Payment</h2></div>
+  <div class="payment-box">
+    <h1 class="form-title">Pay securely</h1>
+    <p class="form-sub">Scan the QR or choose another demo payment method.</p>
+
+    <div class="qr-wrap">
+      <svg class="qr-demo" viewBox="0 0 210 210" xmlns="http://www.w3.org/2000/svg" aria-label="Demo QR code">
+        <rect width="210" height="210" fill="white"/>
+        <g fill="#111">
+          <path d="M10 10h60v60H10zM20 20v40h40V20zM30 30h20v20H30z"/>
+          <path d="M140 10h60v60h-60zM150 20v40h40V20zM160 30h20v20h-20z"/>
+          <path d="M10 140h60v60H10zM20 150v40h40v-40zM30 160h20v20H30z"/>
+          <path d="M82 10h10v20H82zM100 10h12v12H100zM120 10h10v30h-10zM80 42h18v10H80zM105 30h10v25h-10z"/>
+          <path d="M80 70h12v12H80zM100 65h25v10h-25zM135 78h15v12h-15zM155 70h10v25h-10zM175 80h25v10h-25z"/>
+          <path d="M80 95h20v12H80zM110 90h12v25h-12zM130 100h25v10h-25zM170 98h12v22h-12zM190 105h10v18h-10z"/>
+          <path d="M80 125h10v30H80zM95 120h20v12H95zM120 125h12v20h-12zM140 120h25v12h-25zM175 125h25v10h-25z"/>
+          <path d="M80 160h18v12H80zM105 150h10v30h-10zM120 160h20v10h-20zM145 150h12v25h-12zM165 165h35v12h-35z"/>
+          <path d="M82 188h12v12H82zM102 182h25v10h-25zM135 185h10v15h-10zM155 182h18v10h-18zM185 188h15v12h-15z"/>
+        </g>
+      </svg>
+    </div>
+    <div><b>PRAMUD DEMO QR</b></div>
+    <p class="demo-warning">This QR is only a visual prototype. It is NOT linked to a bank account or UPI ID.</p>
+
+    <div class="payment-methods">
+      <button class="pay-method active">▦ UPI / QR</button>
+      <button class="pay-method" onclick="alert('Card payment is demo-only.')">💳 Card</button>
+      <button class="pay-method" onclick="alert('Net banking is demo-only.')">🏦 Net Banking</button>
+      <button class="pay-method" onclick="alert('Wallet payment is demo-only.')">👛 Wallet</button>
+    </div>
+
+    <div class="summary-card" style="text-align:left;margin-top:14px">
+      <div class="summary-row"><span class="muted">Amount</span><b id="payAmount">₹899</b></div>
+    </div>
+    <button class="full-btn" onclick="demoPay()">I've completed payment →</button>
+    <p class="demo-warning">Demo only — tapping this button does not charge money.</p>
+  </div>
+</section>
+
+<section id="ticketScreen" class="screen">
+  <div class="topbar"><button class="back" onclick="showHome()">←</button><h2>Booking confirmed</h2></div>
+  <div class="success"><div class="success-icon">✅</div><h2>Your ticket is ready</h2><p>Keep this booking reference for the prototype.</p></div>
+  <div class="ticket">
+    <div class="ticket-head"><b>PRAMUD</b><span>Bus ticket • Demo booking</span></div>
+    <div class="ticket-body">
+      <div class="ticket-route"><span id="ticketFrom">HYD</span><span>→</span><span id="ticketTo">CHE</span></div>
+      <div class="summary-row"><span class="muted">Bus</span><b id="ticketBus">Orange Travels</b></div>
+      <div class="summary-row"><span class="muted">Date</span><b id="ticketDate">—</b></div>
+      <div class="summary-row"><span class="muted">Seats</span><b id="ticketSeats">—</b></div>
+      <div class="summary-row"><span class="muted">Passenger</span><b id="ticketPassenger">—</b></div>
+      <div class="summary-row"><span class="muted">Booking ID</span><b id="ticketId">PRM000000</b></div>
+      <div style="text-align:center;margin-top:16px"><span class="pill">Demo ticket • No real payment</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="trainResults" class="screen">
+  <div class="topbar"><button class="back" onclick="showHome()">←</button><h2>Available trains</h2></div>
+  <div class="route-summary"><b id="trainRoute">Hyderabad → Chennai</b><br><span id="trainDate">Travel date</span></div>
+  <div class="bus-card"><div class="bus-head"><div class="bus-name">12760 Charminar Express</div><div class="price">₹560</div></div><div class="bus-meta">18:00 → 08:00 • 14h 00m • ⭐ 4.3</div><button onclick="openTrainClass('12760 Charminar Express')">Select class</button></div>
+  <div class="bus-card"><div class="bus-head"><div class="bus-name">12604 Chennai Express</div><div class="price">₹620</div></div><div class="bus-meta">16:30 → 07:10 • 14h 40m • ⭐ 4.1</div><button onclick="openTrainClass('12604 Chennai Express')">Select class</button></div>
+</section>
+
+<section id="trainClassScreen" class="screen form-screen">
+  <div class="topbar"><button class="back" onclick="showTrainResults()">←</button><h2>Choose class</h2></div>
+  <div class="form-pad">
+    <h1 class="form-title" id="trainName">Train</h1>
+    <p class="form-sub">Select your preferred travel class.</p>
+    <div class="passenger-card">
+      <h3>Available classes</h3>
+      <div class="train-class">
+        <button class="class-btn active" onclick="selectTrainClass(this,'Sleeper','₹560')"><b>SL</b><small>Sleeper • ₹560</small></button>
+        <button class="class-btn" onclick="selectTrainClass(this,'3A','₹1,480')"><b>3A</b><small>AC 3 Tier • ₹1,480</small></button>
+        <button class="class-btn" onclick="selectTrainClass(this,'2A','₹2,080')"><b>2A</b><small>AC 2 Tier • ₹2,080</small></button>
+        <button class="class-btn" onclick="selectTrainClass(this,'CC','₹920')"><b>CC</b><small>Chair Car • ₹920</small></button>
+      </div>
+    </div>
+    <div class="passenger-card">
+      <h3>Availability</h3>
+      <div class="summary-row"><span class="muted">Status</span><b style="color:#2f6f45">Available</b></div>
+      <div class="summary-row"><span class="muted">Selected class</span><b id="trainSelectedClass">Sleeper</b></div>
+      <div class="summary-row"><span class="muted">Fare</span><b id="trainFare">₹560</b></div>
+    </div>
+    <button class="full-btn" onclick="trainPassenger()">Continue →</button>
+  </div>
+</section>
+
+<section id="myTicketsScreen" class="page-screen">
+  <div class="topbar"><button class="back" onclick="showHome()">←</button><h2>My Tickets</h2></div>
+  <div class="form-pad">
+    <h1 class="form-title">Your journeys</h1>
+    <p class="form-sub">Tickets booked through PRAMUD will appear here.</p>
+  </div>
+  <div id="ticketList">
+    <div class="ticket-mini">
+      <span class="status">Confirmed</span>
+      <div class="route" style="margin-top:10px">Hyderabad → Chennai</div>
+      <div class="meta">🚌 Orange Travels<br>📅 Demo booking • 💺 Seat 5<br>🎫 Booking ID: PRM482731</div>
+      <button class="book" style="margin-top:12px" onclick="alert('Demo ticket details')">View ticket</button>
+    </div>
+  </div>
+</section>
+
+<section id="profileScreen" class="page-screen">
+  <div class="topbar"><button class="back" onclick="showHome()">←</button><h2>Profile</h2></div>
+  <div class="profile-head">
+    <div class="avatar">P</div>
+    <h2>Prasad</h2>
+    <p>9876543210</p>
+  </div>
+  <div class="profile-menu">
+    <button onclick="alert('Account details — prototype')">Account details <span>›</span></button>
+    <button onclick="alert('Notifications — prototype')">Notifications <span>›</span></button>
+    <button onclick="alert('Help & Support — prototype')">Help & Support <span>›</span></button>
+    <button onclick="logout()">Logout <span>›</span></button>
+  </div>
+</section>
+</main>
+<nav>
+<button id="navHome" class="active" onclick="showHome()">⌂<small>Home</small></button>
+<button id="navTickets" onclick="showTickets()">🎫<small>My Tickets</small></button>
+<button id="navProfile" onclick="showProfile()">👤<small>Profile</small></button>
+</nav>
+</div>
+<script>
+let mode="bus";
+const tabs=document.querySelectorAll(".tab"),results=document.querySelector("#results");
+tabs.forEach(t=>t.onclick=()=>{tabs.forEach(x=>x.classList.remove("active"));t.classList.add("active");mode=t.dataset.mode});
+document.querySelector("#search").onclick=()=>{
+const from=document.querySelector("#from").value||"Hyderabad",to=document.querySelector("#to").value||"Chennai",date=document.querySelector("#date").value||"Select date";
+const items=mode==="bus"
+?[["Orange Travels","21:30","06:30","₹899"],["TSRTC Super Luxury","19:45","05:20","₹720"]]
+:[["12760 Charminar Express","18:00","08:00","₹560"],["12604 Chennai Express","16:30","07:10","₹620"]];
+results.classList.remove("hidden");
+results.innerHTML="<h2>"+(mode==="bus"?"Buses":"Trains")+": "+from+" → "+to+"</h2><p>Travel date: "+date+"</p>"+
+items.map(x=>'<div class="result"><b>'+x[0]+'</b><p>'+x[1]+' → '+x[2]+' &nbsp; • &nbsp; '+x[3]+'</p><button class="book" onclick="alert(\'Prototype only — real booking will be connected later.\')">Book</button></div>').join("");
+};
+
+function showSignup(){
+ document.querySelector("#loginForm").classList.add("hidden");
+ document.querySelector("#signupForm").classList.remove("hidden");
+}
+function showLogin(){
+ document.querySelector("#signupForm").classList.add("hidden");
+ document.querySelector("#loginForm").classList.remove("hidden");
+}
+function validMobile(v){ return /^[6-9]\d{9}$/.test(v); }
+function login(){
+ const mobile=document.querySelector("#loginMobile").value.trim();
+ const password=document.querySelector("#loginPassword").value;
+ if(!/^[6-9]\d{9}$/.test(mobile)){
+   alert("Enter a valid 10-digit mobile number.");
+   return;
+ }
+ if(password.length<4){
+   alert("Password must be at least 4 characters.");
+   return;
+ }
+ document.querySelector("#auth").style.display="none";
+ document.querySelector(".app").style.display="block";
+ window.scrollTo(0,0);
+}
+
+function signup(){
+ const name=document.querySelector("#signupName").value.trim();
+ const mobile=document.querySelector("#signupMobile").value.trim();
+ const password=document.querySelector("#signupPassword").value;
+ if(name.length<2){alert("Please enter your name.");return;}
+ if(!validMobile(mobile)){alert("Please enter a valid 10-digit Indian mobile number.");return;}
+ if(password.length<4){alert("Password must be at least 4 characters.");return;}
+ alert("Account created in prototype. You can now continue to PRAMUD.");
+ document.querySelector("#auth").style.display="none";
+}
+
+
+function hideScreens(){document.querySelectorAll(".screen,.page-screen").forEach(s=>s.classList.remove("active"))}
+function hideHomeContent(){
+ document.querySelector(".hero").style.display="none";
+ document.querySelector(".tabs").style.display="none";
+ document.querySelector(".card").style.display="none";
+ document.querySelector("#results").classList.add("hidden");
+}
+function showBusResults(){hideHomeContent();hideScreens();document.querySelector("#busResults").classList.add("active")}
+function showHome(){
+ hideScreens();
+ document.querySelector(".hero").style.display="block";
+ document.querySelector(".tabs").style.display="flex";
+ document.querySelector(".card").style.display="block";
+ setNav("navHome");
+}
+let selectedSeats=[];
+function openSeats(name,price){
+ document.querySelector("#seatBusName").textContent=name;
+ selectedSeats=[];
+ document.querySelector("#selectedCount").textContent="0 seats";
+ const grid=document.querySelector("#seatGrid"); grid.innerHTML="";
+ for(let i=1;i<=20;i++){
+   const b=document.createElement("button"); b.className="seat"+([3,7,12,18].includes(i)?" booked":""); b.textContent=i;
+   if(!b.classList.contains("booked")) b.onclick=()=>toggleSeat(i,b);
+   grid.appendChild(b);
+ }
+ hideScreens();document.querySelector("#seatScreen").classList.add("active");
+}
+function toggleSeat(n,b){
+ if(selectedSeats.includes(n)){selectedSeats=selectedSeats.filter(x=>x!==n);b.classList.remove("selected")}
+ else if(selectedSeats.length<6){selectedSeats.push(n);b.classList.add("selected")}
+ document.querySelector("#selectedCount").textContent=selectedSeats.length+" seat"+(selectedSeats.length===1?"":"s");
+}
+function continueBooking(){
+ if(!selectedSeats.length){alert("Please select at least one seat.");return}
+ alert("Selected seat(s): "+selectedSeats.join(", ")+"\\nPassenger details screen is the next step.\\n\\nPrototype only — no real booking/payment yet.");
+}
+
+
+let selectedTrainClass="Sleeper", selectedTrainFare="₹560";
+function showTrainResults(){hideScreens();document.querySelector("#trainResults").classList.add("active")}
+function openTrainClass(name){
+ document.querySelector("#trainName").textContent=name;
+ selectedTrainClass="Sleeper";selectedTrainFare="₹560";
+ document.querySelector("#trainSelectedClass").textContent=selectedTrainClass;
+ document.querySelector("#trainFare").textContent=selectedTrainFare;
+ document.querySelectorAll(".class-btn").forEach((x,i)=>x.classList.toggle("active",i===0));
+ hideScreens();document.querySelector("#trainClassScreen").classList.add("active");
+}
+function selectTrainClass(btn,cls,fare){
+ document.querySelectorAll(".class-btn").forEach(x=>x.classList.remove("active"));
+ btn.classList.add("active");selectedTrainClass=cls;selectedTrainFare=fare;
+ document.querySelector("#trainSelectedClass").textContent=cls;
+ document.querySelector("#trainFare").textContent=fare;
+}
+function trainPassenger(){
+ alert("Train class selected: "+selectedTrainClass+" ("+selectedTrainFare+")\\nPassenger details will be connected to the common booking flow next.\\n\\nPrototype only — no real railway booking/payment yet.");
+}
+
+
+
+
+function showTickets(){
+ hideHomeContent();
+ hideScreens();
+ document.querySelector("#myTicketsScreen").classList.add("active");
+ setNav("navTickets");
+ window.scrollTo(0,0);
+}
+function showProfile(){
+ hideHomeContent();
+ hideScreens();
+ document.querySelector("#profileScreen").classList.add("active");
+ setNav("navProfile");
+ window.scrollTo(0,0);
+}
+function setNav(activeId){
+ document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+ const b=document.querySelector("#"+activeId); if(b)b.classList.add("active");
+}
+function logout(){
+ document.querySelector("#auth").style.display="flex";
+ showHome();
+}
+
+
+function openPayment(){
+ const amount=document.querySelector("#sumTotal").textContent;
+ document.querySelector("#payAmount").textContent=amount;
+ hideScreens();document.querySelector("#paymentScreen").classList.add("active");
+}
+function demoPay(){
+ alert("Demo payment successful. No real money was charged.");
+ confirmBooking();
+}
+
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
+}
+</script>
+</body>
+</html>
